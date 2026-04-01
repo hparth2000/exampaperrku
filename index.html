@@ -1881,18 +1881,18 @@
       function simpleRows(items) {
         return items.map((item, i) => `
           <tr>
-            <td class="blank"></td>
+            <td class="blank">${isAnswerMode ? "" : ""}</td>
             <td class="q-num">${i + 1}</td>
             <td colspan="2">${previewText(item.question, p.questionSize, false)}</td>
             <td class="blank"></td>
-          </tr>
+           </tr>
           ${isAnswerMode && (item.answer?.text || "").trim() ? `
             <tr>
               <td class="blank"></td>
               <td class="blank"></td>
               <td colspan="2" class="answer-fill">${previewText(item.answer, p.answerSize, false)}</td>
               <td class="blank"></td>
-            </tr>
+             </tr>
           ` : ""}
         `).join("");
       }
@@ -1904,7 +1904,7 @@
             <td class="q-num">${i + 1}</td>
             <td colspan="2">${previewText(item.question, p.questionSize, false)}</td>
             <td class="blank"></td>
-          </tr>
+           </tr>
 
           ${item.options.map((opt, oi) => {
             const highlight = isAnswerMode && oi === item.correctOption;
@@ -1915,7 +1915,7 @@
                 <td class="q-opt ${highlight ? "answer-highlight" : ""}">${String.fromCharCode(97 + oi)}</td>
                 <td class="${highlight ? "answer-highlight" : ""}">${previewText(opt, p.optionSize, false)}</td>
                 <td class="blank"></td>
-              </tr>
+               </tr>
             `;
           }).join("")}
 
@@ -1930,7 +1930,7 @@
                 ${(item.answer?.text || "").trim() ? `<br>${previewText(item.answer, p.answerSize, false)}` : ""}
               </td>
               <td class="blank"></td>
-            </tr>
+             </tr>
           ` : ""}
         `).join("");
       }
@@ -1943,7 +1943,7 @@
               ${escapeHtml(section.title)}
             </td>
             <td class="q-marks">${escapeHtml(section.marks)}</td>
-          </tr>
+           </tr>
           ${rows}
         `;
       }
