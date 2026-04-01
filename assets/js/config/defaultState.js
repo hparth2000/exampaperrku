@@ -30,8 +30,8 @@ window.ExamApp.defaultState = (function () {
         instructionTitleSize: 18,
         instructionSize: 18,
         sectionTitleSize: 18,
-        questionSize: 17,
-        optionSize: 17,
+        questionSize: 14,
+        optionSize: 14,
         footerSize: 18,
 
         paperTextBold: false,
