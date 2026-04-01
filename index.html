@@ -1,0 +1,2033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Exam Paper Admin - Question Bank</title>
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --line:#dde3ea;
+      --line-dark:#cfd7e2;
+      --text:#1b2430;
+      --muted:#667085;
+      --primary:#2563eb;
+      --primary-soft:#eff6ff;
+      --success:#16a34a;
+      --success-soft:#eefbf3;
+      --warning:#ea580c;
+      --warning-soft:#fff7ed;
+      --danger:#dc2626;
+      --danger-soft:#fff1f2;
+      --purple:#7c3aed;
+      --purple-soft:#f5f3ff;
+      --radius:12px;
+      --shadow:0 8px 24px rgba(15,23,42,.05);
+      --sidebar-width:360px;
+      --yellow:#fff3a6;
+      --yellow-soft:#fff9cf;
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ margin:0; padding:0; height:100%; overflow:hidden; }
+    body{
+      background:var(--bg);
+      color:var(--text);
+      font-family:Inter, Arial, sans-serif;
+      font-size:13px;
+    }
+
+    ::-webkit-scrollbar{ width:8px; height:8px; }
+    ::-webkit-scrollbar-thumb{ background:#cfd7e2; border-radius:999px; }
+    ::-webkit-scrollbar-track{ background:transparent; }
+
+    .app{
+      display:grid;
+      grid-template-columns:var(--sidebar-width) 8px minmax(0,1fr);
+      height:100vh;
+      padding:10px;
+      gap:0;
+    }
+
+    .app.sidebar-hidden{ grid-template-columns:0 0 minmax(0,1fr); }
+
+    .panel,
+    .preview-shell{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      min-height:0;
+      overflow:hidden;
+    }
+
+    .panel{
+      display:flex;
+      flex-direction:column;
+      min-width:290px;
+      margin-right:10px;
+    }
+
+    .app.sidebar-hidden .panel{
+      min-width:0;
+      opacity:0;
+      pointer-events:none;
+      margin-right:0;
+      border:none;
+      box-shadow:none;
+    }
+
+    .resizer{
+      width:8px;
+      cursor:col-resize;
+      position:relative;
+      user-select:none;
+      touch-action:none;
+    }
+
+    .resizer::before{
+      content:"";
+      position:absolute;
+      top:10px;
+      bottom:10px;
+      left:2px;
+      width:4px;
+      border-radius:999px;
+      background:#d8e0ea;
+    }
+
+    .resizer:hover::before,
+    .resizer.active::before{
+      background:#9dbdff;
+    }
+
+    .app.sidebar-hidden .resizer{ display:none; }
+
+    .panel-head{
+      padding:12px;
+      border-bottom:1px solid var(--line);
+      background:#fbfcfe;
+      flex-shrink:0;
+    }
+
+    .panel-title{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .panel-title h1{
+      margin:0;
+      font-size:17px;
+      line-height:1.2;
+    }
+
+    .panel-title p{
+      margin:4px 0 0;
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.4;
+    }
+
+    .toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+
+    .panel-body{
+      padding:10px;
+      overflow:auto;
+      flex:1;
+      min-height:0;
+    }
+
+    details.group{
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:#fff;
+      margin-bottom:8px;
+      overflow:hidden;
+    }
+
+    details.group[open]{ border-color:var(--line-dark); }
+
+    details.group > summary{
+      list-style:none;
+      cursor:pointer;
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      font-weight:800;
+      font-size:13px;
+      background:#fcfdff;
+      border-bottom:1px solid transparent;
+    }
+
+    details.group[open] > summary{ border-bottom-color:var(--line); }
+    details.group > summary::-webkit-details-marker{ display:none; }
+
+    .group-body{ padding:10px; }
+
+    .summary-right{
+      color:var(--muted);
+      font-weight:700;
+      font-size:11px;
+    }
+
+    .grid-2,.grid-3,.grid-4{
+      display:grid;
+      gap:8px;
+      margin-bottom:8px;
+    }
+
+    .grid-2{ grid-template-columns:1fr 1fr; }
+    .grid-3{ grid-template-columns:1fr 1fr 1fr; }
+    .grid-4{ grid-template-columns:1fr 1fr 1fr 1fr; }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      margin-bottom:8px;
+    }
+
+    .field label{
+      font-size:10px;
+      font-weight:800;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.3px;
+    }
+
+    input, textarea, select{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:8px 9px;
+      font-size:12px;
+      line-height:1.35;
+      outline:none;
+      background:#fff;
+      transition:border-color .18s ease, box-shadow .18s ease;
+    }
+
+    input:focus, textarea:focus, select:focus{
+      border-color:#9dbdff;
+      box-shadow:0 0 0 3px rgba(37,99,235,.08);
+    }
+
+    textarea{
+      min-height:56px;
+      resize:vertical;
+    }
+
+    .check{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      min-height:34px;
+      font-size:12px;
+      font-weight:700;
+      color:var(--text);
+    }
+
+    .check input{
+      width:auto;
+      margin:0;
+      box-shadow:none;
+    }
+
+    button{
+      border:none;
+      border-radius:8px;
+      padding:7px 10px;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+      transition:.18s ease;
+      line-height:1.1;
+    }
+
+    button:hover{ transform:translateY(-1px); }
+
+    .btn-primary{ background:var(--primary); color:#fff; }
+    .btn-secondary{ background:#f7f9fc; color:#344054; border:1px solid var(--line); }
+    .btn-success{ background:var(--success-soft); color:var(--success); border:1px solid #bbf7d0; }
+    .btn-warning{ background:var(--warning-soft); color:var(--warning); border:1px solid #fed7aa; }
+    .btn-danger{ background:var(--danger-soft); color:var(--danger); border:1px solid #fecdd3; }
+    .btn-purple{ background:var(--purple-soft); color:var(--purple); border:1px solid #ddd6fe; }
+
+    .stack-actions{
+      display:flex;
+      gap:5px;
+      flex-wrap:wrap;
+      margin-top:8px;
+    }
+
+    .item{
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:#fcfdff;
+      padding:8px;
+      margin-bottom:8px;
+    }
+
+    .item-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      margin-bottom:8px;
+    }
+
+    .item-head strong{ font-size:12px; }
+
+    .tiny-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:5px;
+    }
+
+    .tiny-actions button{
+      padding:5px 7px;
+      font-size:11px;
+      border-radius:7px;
+    }
+
+    .option{
+      border:1px dashed #d8e2ef;
+      border-radius:9px;
+      background:#fff;
+      padding:8px;
+      margin-top:8px;
+    }
+
+    .compact-editor{
+      display:grid;
+      gap:6px;
+      margin-bottom:6px;
+    }
+
+    .compact-meta{
+      display:grid;
+      grid-template-columns:110px 1fr;
+      gap:8px;
+      align-items:end;
+    }
+
+    .help{
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.45;
+      margin-top:4px;
+    }
+
+    .status-box{
+      padding:8px 10px;
+      border-radius:8px;
+      font-size:11px;
+      font-weight:700;
+      border:1px solid var(--line);
+      background:#f8fafc;
+      color:#334155;
+      margin-top:8px;
+    }
+
+    .status-box.ok{
+      background:#eefdf3;
+      color:#166534;
+      border-color:#bbf7d0;
+    }
+
+    .status-box.error{
+      background:#fff1f2;
+      color:#b91c1c;
+      border-color:#fecdd3;
+    }
+
+    .preview-shell{
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+      padding:10px;
+    }
+
+    .preview-tools{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      align-items:center;
+      margin-bottom:10px;
+      flex-shrink:0;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      padding:7px 10px;
+      border-radius:999px;
+      background:var(--primary-soft);
+      color:var(--primary);
+      border:1px solid #cfe0ff;
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .chip.answer{
+      background:var(--warning-soft);
+      color:var(--warning);
+      border-color:#fed7aa;
+    }
+
+    #preview{
+      flex:1;
+      min-height:0;
+      overflow:auto;
+      padding:2px;
+    }
+
+    .paper{
+      width:210mm;
+      min-height:297mm;
+      margin:0 auto;
+      background:#fff;
+      border:1px solid #ddd;
+      box-shadow:0 8px 24px rgba(0,0,0,.06);
+      padding:12mm 15mm;
+    }
+
+    .paper *{ word-wrap:break-word; }
+
+    .paper-title{
+      text-align:center;
+      line-height:1.16;
+      margin-bottom:14px;
+    }
+
+    .meta-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:20px;
+      margin-bottom:10px;
+    }
+
+    .meta-right{ padding-top:26px; }
+    .instructions-title{ margin-bottom:4px; }
+
+    .instructions-list{
+      margin:0 0 12px 18px;
+      padding-left:16px;
+      line-height:1.3;
+    }
+
+    .paper-table{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+    }
+
+    .paper-table td{
+      border:1px solid #555;
+      padding:5px 6px;
+      vertical-align:top;
+      line-height:1.25;
+    }
+
+    .q-label{
+      width:48px;
+      text-align:center;
+      white-space:nowrap;
+      font-weight:700;
+    }
+
+    .q-num{
+      width:34px;
+      text-align:right;
+      font-weight:700;
+    }
+
+    .q-opt{
+      width:32px;
+      text-align:center;
+      font-weight:700;
+    }
+
+    .q-marks{
+      width:52px;
+      text-align:center;
+      white-space:nowrap;
+      font-weight:700;
+    }
+
+    .blank{ background:#fff; }
+    .answer-fill{ background:var(--yellow-soft); }
+    .answer-highlight{ background:var(--yellow); }
+
+    .footer-stars{
+      text-align:center;
+      margin-top:10px;
+      letter-spacing:1px;
+    }
+
+    @media (max-width:1250px){
+      html, body{ overflow:auto; height:auto; }
+      .app{ grid-template-columns:1fr; height:auto; min-height:100vh; }
+      .panel, .preview-shell{ margin-right:0; min-height:auto; height:auto; }
+      .panel-body, #preview{ overflow:visible; }
+      .paper{ width:100%; min-height:auto; }
+      .resizer{ display:none; }
+      .app.sidebar-hidden{ grid-template-columns:1fr; }
+      .app.sidebar-hidden .panel{ display:none; }
+    }
+
+    @media (max-width:640px){
+      .grid-2,.grid-3,.grid-4,.compact-meta{ grid-template-columns:1fr; }
+      .app{ padding:8px; }
+      .preview-shell, .panel-head, .panel-body{ padding:8px; }
+    }
+
+    @media print{
+      html, body{ height:auto; overflow:visible; }
+      body{ background:#fff; }
+      .panel, .resizer, .preview-tools{ display:none !important; }
+      .app{ display:block; padding:0; height:auto; }
+      .preview-shell{ border:none; box-shadow:none; padding:0; overflow:visible; }
+      #preview{ overflow:visible; height:auto; padding:0; }
+      .paper{
+        width:100%;
+        min-height:auto;
+        border:none;
+        box-shadow:none;
+        margin:0;
+        padding:0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="panel">
+      <div class="panel-head">
+        <div class="panel-title">
+          <div>
+            <h1>Exam Paper Admin</h1>
+            <p>Question bank + same paper format preview</p>
+          </div>
+          <button class="btn-secondary" onclick="toggleSidebar()">Hide</button>
+        </div>
+
+        <div class="toolbar">
+          <button class="btn-primary" onclick="renderAll()">Refresh</button>
+          <button class="btn-success" onclick="saveNow()">Save</button>
+          <button class="btn-secondary" onclick="downloadJSON()">Export</button>
+          <button class="btn-secondary" onclick="document.getElementById('jsonInput').click()">Import</button>
+          <button class="btn-warning" onclick="loadSaved()">Load</button>
+          <button class="btn-danger" onclick="resetState()">Reset</button>
+          <input type="file" id="jsonInput" accept=".json" hidden>
+        </div>
+      </div>
+
+      <div class="panel-body" id="adminPanel"></div>
+    </aside>
+
+    <div class="resizer" id="resizer"></div>
+
+    <main class="preview-shell">
+      <div class="preview-tools">
+        <button class="btn-secondary" id="sidebarToggleBtn" onclick="toggleSidebar()">Hide Admin</button>
+        <button class="btn-primary" onclick="setPreviewMode('question')">Question</button>
+        <button class="btn-warning" onclick="setPreviewMode('answer')">Answer</button>
+        <button class="btn-success" onclick="printPreview('question')">Question PDF</button>
+        <button class="btn-purple" onclick="printPreview('answer')">Answer PDF</button>
+        <span id="modeChip" class="chip">Question Preview</span>
+      </div>
+      <div id="preview"></div>
+    </main>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "exam_paper_bank_v_final_2";
+    const UI_KEY = "exam_paper_bank_ui_v_final_2";
+
+    const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbxqyy0vmNC_PKdQU4FJut4utSCXJx4fwZH3IJlvgs_7VUnzD0moGksffRfz8_7OgcAVEg/exec";
+
+    const DEFAULT_SHEETS = [
+      "Logical Reasoning & Data Interpretations",
+      "Basics of Mathametics",
+      "Basics of Finance Management",
+      "E Commerce & Business",
+      "Depository Operations",
+      "React JS",
+      "React Native",
+      "Introduction to AI and ML Concepts",
+      "Animation Software",
+      "Portfolio Design",
+      "Financial Literacy",
+      "Leadership Skills",
+      "Life Skills",
+      "Auditing and Assurance",
+      "Goods and Service Tax",
+      "Mutual Funds Operations",
+      "Business Banking Operations",
+      "Human Resource Management",
+      "Business Economics",
+      "Animation Software - I",
+      "Basic Material Exploration",
+      "Android Mobile Application (Kotlin)",
+      "Mobile Application Development using Flutter",
+      "Direct Digital Communication: Email and SMS",
+      "Content Creation and SEO Optimization",
+      "Fundamentals of Insurance",
+      "Business Communication",
+      "Career Skills",
+      "Digital Empowerment",
+      "Indian Financial System",
+      "Financial Accounting and Analysis-II",
+      "Basics of Accounting",
+      "Banking and Financial Markets",
+      "Sales and Distribution Management-II",
+      "Principles of Marketing",
+      "Object Oriented Programming - I",
+      "Database Management System",
+      "Basics of Graphic Design",
+      "Basics of Digital Marketing",
+      "Income Tax Law and Practices"
+    ];
+
+    const fontMap = {
+      century: '"Century Schoolbook","Century","Times New Roman",serif',
+      times: '"Times New Roman", Times, serif',
+      georgia: 'Georgia, serif',
+      arial: 'Arial, Helvetica, sans-serif',
+      calibri: 'Calibri, Arial, sans-serif'
+    };
+
+    let ui = {
+      previewMode: "question",
+      sidebarWidth: 360,
+      sidebarVisible: true
+    };
+
+    function makeText(text = "") {
+      return { text, bold: false, size: "" };
+    }
+
+    function makeQA(question = "", answer = "") {
+      return { question: makeText(question), answer: makeText(answer) };
+    }
+
+    function makeMcq(question = "") {
+      return {
+        question: makeText(question),
+        options: [
+          makeText("Option A"),
+          makeText("Option B"),
+          makeText("Option C"),
+          makeText("Option D")
+        ],
+        correctOption: 0,
+        answer: makeText("")
+      };
+    }
+
+    function defaultState() {
+      return {
+        paper: {
+          university: "RK UNIVERSITY",
+          examName: "BVOC CIE 2",
+          semester: "Semester - 2",
+          courseName: "Object Oriented Programming - I",
+          courseCode: "BIT214",
+          totalMarks: "50",
+          examDate: "23/03/2026",
+          duration: "1.5 hrs.",
+          examTime: "7:45 AM TO 9:15 AM",
+          footerStars: "*************",
+
+          fontFamily: "century",
+          baseSize: 17,
+          titleSize: 24,
+          metaSize: 18,
+          instructionTitleSize: 18,
+          instructionSize: 18,
+          sectionTitleSize: 18,
+          questionSize: 17,
+          optionSize: 17,
+          footerSize: 18,
+          answerSize: 16,
+
+          paperTextBold: false,
+          titleBold: true,
+          metaBold: true,
+          instructionsBold: true,
+          sectionTitleBold: true
+        },
+
+        questionBank: {
+          apiUrl: DEFAULT_API_URL,
+          sheetName: "Object Oriented Programming - I",
+          sheetOptions: [...DEFAULT_SHEETS],
+          subject: "",
+          unit: "",
+          topic: "",
+          difficulty: "",
+          type: "",
+          limit: 20,
+          status: "Ready"
+        },
+
+        instructions: [
+          makeText("Attempt all questions."),
+          makeText("Make suitable assumptions wherever necessary."),
+          makeText("Figures to the right indicate full marks."),
+          makeText("Programmable calculators are not permitted.")
+        ],
+
+        sections: {
+          mcq: {
+            label: "Q.1",
+            title: "Multiple Choice Questions.",
+            marks: "5",
+            items: []
+          },
+
+          short: {
+            label: "Q.2",
+            title: "Write Short Answers : (Any 5 out of 7)",
+            marks: "10",
+            items: []
+          },
+
+          brief: {
+            label: "Q.3",
+            title: "Answer in brief : (Any 3 out of 4)",
+            marks: "15",
+            items: []
+          },
+
+          detail: {
+            label: "Q.4",
+            title: "Answer in detail: (Any 2 out of 3)",
+            marks: "20",
+            items: []
+          }
+        }
+      };
+    }
+
+    let state = defaultState();
+    let sheetLoadTimer = null;
+
+    function escapeHtml(str = "") {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function nl2br(str = "") {
+      return escapeHtml(str).replace(/\n/g, "<br>");
+    }
+
+    function normalizeText(item, fallback = "") {
+      if (item && typeof item === "object" && "text" in item) {
+        return {
+          text: typeof item.text === "string" ? item.text : fallback,
+          bold: !!item.bold,
+          size: item.size === "" || item.size == null ? "" : Number(item.size)
+        };
+      }
+      if (typeof item === "string") return makeText(item);
+      return makeText(fallback);
+    }
+
+    function normalizeSimpleItem(item) {
+      if (item && typeof item === "object" && ("question" in item || "answer" in item)) {
+        return {
+          question: normalizeText(item.question),
+          answer: normalizeText(item.answer)
+        };
+      }
+      return { question: normalizeText(item), answer: makeText("") };
+    }
+
+    function normalizeMcqItem(item) {
+      const normalized = {
+        question: normalizeText(item?.question),
+        options: Array.isArray(item?.options) && item.options.length
+          ? item.options.map(opt => normalizeText(opt))
+          : [makeText("Option A"), makeText("Option B"), makeText("Option C"), makeText("Option D")],
+        correctOption: Number.isInteger(item?.correctOption) ? item.correctOption : 0,
+        answer: normalizeText(item?.answer)
+      };
+
+      if (normalized.correctOption < 0 || normalized.correctOption >= normalized.options.length) {
+        normalized.correctOption = 0;
+      }
+      return normalized;
+    }
+
+    function normalizeSection(section, type) {
+      const base = {
+        label: section?.label || "",
+        title: section?.title || "",
+        marks: section?.marks || "",
+        items: []
+      };
+
+      if (type === "mcq") {
+        base.items = Array.isArray(section?.items) ? section.items.map(normalizeMcqItem) : [];
+      } else {
+        base.items = Array.isArray(section?.items) ? section.items.map(normalizeSimpleItem) : [];
+      }
+      return base;
+    }
+
+    function normalizeState(raw) {
+      const d = defaultState();
+      return {
+        paper: { ...d.paper, ...(raw?.paper || {}) },
+        questionBank: {
+          ...d.questionBank,
+          ...(raw?.questionBank || {}),
+          sheetOptions: Array.isArray(raw?.questionBank?.sheetOptions) && raw.questionBank.sheetOptions.length
+            ? raw.questionBank.sheetOptions
+            : d.questionBank.sheetOptions
+        },
+        instructions: Array.isArray(raw?.instructions)
+          ? raw.instructions.map(item => normalizeText(item))
+          : d.instructions,
+        sections: {
+          mcq: normalizeSection(raw?.sections?.mcq || d.sections.mcq, "mcq"),
+          short: normalizeSection(raw?.sections?.short || d.sections.short, "simple"),
+          brief: normalizeSection(raw?.sections?.brief || d.sections.brief, "simple"),
+          detail: normalizeSection(raw?.sections?.detail || d.sections.detail, "simple")
+        }
+      };
+    }
+
+    function saveUI() {
+      localStorage.setItem(UI_KEY, JSON.stringify(ui));
+    }
+
+    function loadUI() {
+      const raw = localStorage.getItem(UI_KEY);
+      if (!raw) return;
+      try { ui = { ...ui, ...JSON.parse(raw) }; } catch {}
+    }
+
+    function saveNow() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      saveUI();
+      alert("Saved in browser.");
+    }
+
+    function autoSave() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      saveUI();
+    }
+
+    function loadSaved() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return alert("No saved data found.");
+      try {
+        state = normalizeState(JSON.parse(raw));
+        renderAll();
+        alert("Loaded saved data.");
+      } catch {
+        alert("Saved data is invalid.");
+      }
+    }
+
+    function resetState() {
+      if (!confirm("Reset all data?")) return;
+      state = defaultState();
+      renderAll();
+    }
+
+    function downloadJSON() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "exam-paper-data.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    document.getElementById("jsonInput").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          state = normalizeState(JSON.parse(reader.result));
+          renderAll();
+          alert("JSON imported.");
+        } catch {
+          alert("Invalid JSON file.");
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    function setPaper(field, value) {
+      const numericFields = [
+        "baseSize","titleSize","metaSize","instructionTitleSize",
+        "instructionSize","sectionTitleSize","questionSize",
+        "optionSize","footerSize","answerSize"
+      ];
+      state.paper[field] = numericFields.includes(field) ? Number(value || 0) : value;
+      commit(field.includes("Size") || field.includes("Bold") ? false : true);
+    }
+
+    function setPaperBool(field, value) {
+      state.paper[field] = !!value;
+      commit(false);
+    }
+
+    function setBank(field, value) {
+      state.questionBank[field] = field === "limit" ? Number(value || 0) : value;
+      commit(false);
+
+      if (field === "apiUrl") debouncedLoadSheetNames();
+    }
+
+    function setBankStatus(text) {
+      state.questionBank.status = text;
+      renderAdminPanel();
+      autoSave();
+    }
+
+    function debouncedLoadSheetNames() {
+      clearTimeout(sheetLoadTimer);
+      sheetLoadTimer = setTimeout(() => {
+        if (state.questionBank.apiUrl.trim()) loadSheetNames();
+      }, 600);
+    }
+
+    async function loadSheetNames() {
+      const qb = state.questionBank;
+
+      if (!qb.apiUrl.trim()) {
+        setBankStatus("Error: Please enter API URL.");
+        return;
+      }
+
+      try {
+        setBankStatus("Loading sheet names...");
+        const url = new URL(qb.apiUrl.trim());
+
+        const res = await fetch(url.toString(), { method: "GET", redirect: "follow" });
+        const rawText = await res.text();
+
+        let json;
+        try {
+          json = JSON.parse(rawText);
+        } catch {
+          renderAdminPanel();
+          autoSave();
+          setBankStatus("Loaded local sheet list. Server sheet list response invalid.");
+          return;
+        }
+
+        if (!json.success || !Array.isArray(json.data)) {
+          renderAdminPanel();
+          autoSave();
+          setBankStatus("Loaded local sheet list. Server sheet list unavailable.");
+          return;
+        }
+
+        if (json.data.length) {
+          state.questionBank.sheetOptions = json.data;
+          if (!json.data.includes(state.questionBank.sheetName)) {
+            state.questionBank.sheetName = json.data[0];
+          }
+        }
+
+        renderAdminPanel();
+        autoSave();
+        setBankStatus(`Success: Loaded ${state.questionBank.sheetOptions.length} sheet names.`);
+      } catch (error) {
+        console.error(error);
+        renderAdminPanel();
+        autoSave();
+        setBankStatus("Loaded local sheet list. Auto-fetch failed.");
+      }
+    }
+
+    function setSectionMeta(sectionKey, field, value) {
+      state.sections[sectionKey][field] = value;
+      commit();
+    }
+
+    function addInstruction() {
+      state.instructions.push(makeText("New instruction"));
+      commit();
+    }
+
+    function removeInstruction(index) {
+      state.instructions.splice(index, 1);
+      commit();
+    }
+
+    function moveInstruction(index, dir) {
+      const next = index + dir;
+      if (next < 0 || next >= state.instructions.length) return;
+      [state.instructions[index], state.instructions[next]] = [state.instructions[next], state.instructions[index]];
+      commit();
+    }
+
+    function setInstructionField(index, field, value) {
+      const item = state.instructions[index];
+      item[field] = field === "bold" ? !!value : value;
+      if (field === "size") item[field] = value === "" ? "" : Number(value);
+      commit(false);
+    }
+
+    function addSimpleQuestion(sectionKey) {
+      state.sections[sectionKey].items.push(makeQA("New question", "New answer"));
+      commit();
+    }
+
+    function removeSimpleQuestion(sectionKey, index) {
+      state.sections[sectionKey].items.splice(index, 1);
+      commit();
+    }
+
+    function moveSimpleQuestion(sectionKey, index, dir) {
+      const arr = state.sections[sectionKey].items;
+      const next = index + dir;
+      if (next < 0 || next >= arr.length) return;
+      [arr[index], arr[next]] = [arr[next], arr[index]];
+      commit();
+    }
+
+    function setSimpleQuestionField(sectionKey, index, part, field, value) {
+      const item = state.sections[sectionKey].items[index][part];
+      item[field] = field === "bold" ? !!value : value;
+      if (field === "size") item[field] = value === "" ? "" : Number(value);
+      commit(false);
+    }
+
+    function addMcq() {
+      state.sections.mcq.items.push(makeMcq("New MCQ question"));
+      commit();
+    }
+
+    function removeMcq(index) {
+      state.sections.mcq.items.splice(index, 1);
+      commit();
+    }
+
+    function moveMcq(index, dir) {
+      const arr = state.sections.mcq.items;
+      const next = index + dir;
+      if (next < 0 || next >= arr.length) return;
+      [arr[index], arr[next]] = [arr[next], arr[index]];
+      commit();
+    }
+
+    function setMcqQuestionField(index, field, value) {
+      const q = state.sections.mcq.items[index].question;
+      q[field] = field === "bold" ? !!value : value;
+      if (field === "size") q[field] = value === "" ? "" : Number(value);
+      commit(false);
+    }
+
+    function setMcqAnswerField(index, field, value) {
+      const a = state.sections.mcq.items[index].answer;
+      a[field] = field === "bold" ? !!value : value;
+      if (field === "size") a[field] = value === "" ? "" : Number(value);
+      commit(false);
+    }
+
+    function setMcqCorrectOption(index, value) {
+      state.sections.mcq.items[index].correctOption = Number(value || 0);
+      commit(false);
+    }
+
+    function addMcqOption(index) {
+      state.sections.mcq.items[index].options.push(makeText("New option"));
+      commit();
+    }
+
+    function removeMcqOption(index, optIndex) {
+      const item = state.sections.mcq.items[index];
+      if (item.options.length <= 2) return alert("At least 2 options required.");
+      item.options.splice(optIndex, 1);
+      if (item.correctOption >= item.options.length) item.correctOption = item.options.length - 1;
+      commit();
+    }
+
+    function moveMcqOption(index, optIndex, dir) {
+      const arr = state.sections.mcq.items[index].options;
+      const item = state.sections.mcq.items[index];
+      const next = optIndex + dir;
+      if (next < 0 || next >= arr.length) return;
+      [arr[optIndex], arr[next]] = [arr[next], arr[optIndex]];
+
+      if (item.correctOption === optIndex) item.correctOption = next;
+      else if (item.correctOption === next) item.correctOption = optIndex;
+
+      commit();
+    }
+
+    function setMcqOptionField(index, optIndex, field, value) {
+      const opt = state.sections.mcq.items[index].options[optIndex];
+      opt[field] = field === "bold" ? !!value : value;
+      if (field === "size") opt[field] = value === "" ? "" : Number(value);
+      commit(false);
+    }
+
+    function clearAllQuestions() {
+      if (!confirm("Clear all current section questions?")) return;
+      state.sections.mcq.items = [];
+      state.sections.short.items = [];
+      state.sections.brief.items = [];
+      state.sections.detail.items = [];
+      commit();
+    }
+
+    function commit(full = true) {
+      autoSave();
+      if (full) renderAll();
+      else renderPreview();
+    }
+
+    function getStatusClass(text) {
+      const t = String(text || "").toLowerCase();
+      if (t.includes("success") || t.includes("fetched") || t.includes("loaded")) return "status-box ok";
+      if (t.includes("error") || t.includes("failed") || t.includes("invalid")) return "status-box error";
+      return "status-box";
+    }
+
+   function normalizeType(type) {
+  const t = String(type || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[:\-]+/g, "")
+    .replace(/\s+/g, " ");
+
+  if (
+    t === "mcq" ||
+    t === "multiple choice" ||
+    t === "multiple choice question" ||
+    t === "multiple choice questions"
+  ) return "MCQ";
+
+  if (
+    t === "short" ||
+    t === "short answer" ||
+    t === "short answers" ||
+    t === "write short answer" ||
+    t === "write short answers" ||
+    t === "short question" ||
+    t === "short questions"
+  ) return "SHORT";
+
+  if (
+    t === "brief" ||
+    t === "answer in brief" ||
+    t === "answers in brief" ||
+    t === "medium question" ||
+    t === "medium questions"
+  ) return "BRIEF";
+
+  if (
+    t === "detail" ||
+    t === "detailed" ||
+    t === "long" ||
+    t === "Long Question" ||
+    t === "long question" ||
+    t === "long answers" ||
+    t === "answer in detail" ||
+    t === "answers in detail" ||
+    t === "Large Question" ||
+    t === "large question" ||
+    t === "practical" ||
+    t == "Answer in detail"
+  ) return "DETAIL";
+
+  return String(type || "").trim().toUpperCase();
+}
+
+    function normalizeCell(value) {
+      return String(value == null ? "" : value).trim();
+    }
+
+    function guessCorrectOption(answerText, options) {
+      const answer = normalizeCell(answerText).toLowerCase();
+      if (!answer) return 0;
+
+      const shortMap = { a:0, b:1, c:2, d:3 };
+      if (answer in shortMap && options[shortMap[answer]]) return shortMap[answer];
+
+      const firstChar = answer.charAt(0);
+      if (firstChar in shortMap && [".", ")", "-", ":"].includes(answer.charAt(1))) {
+        return shortMap[firstChar];
+      }
+
+      for (let i = 0; i < options.length; i++) {
+        if (normalizeCell(options[i].text).toLowerCase() === answer) return i;
+      }
+
+      for (let i = 0; i < options.length; i++) {
+        const optText = normalizeCell(options[i].text).toLowerCase();
+        if (optText && (optText.includes(answer) || answer.includes(optText))) return i;
+      }
+
+      return 0;
+    }
+
+    function fillQuestionsFromBank(rows) {
+      const mcqItems = [];
+      const shortItems = [];
+      const briefItems = [];
+      const detailItems = [];
+
+      rows.forEach((row) => {
+        const type = normalizeType(row.Question_Type || row["Question_Type"]);
+        const question = normalizeCell(row.Question || row["Question"]);
+        const answer = normalizeCell(row.Answer || row["Answer"]);
+
+        if (!question) return;
+
+        if (type === "MCQ") {
+          const options = [
+            makeText(normalizeCell(row.Option1 || row["Option1"])),
+            makeText(normalizeCell(row.Option2 || row["Option2"])),
+            makeText(normalizeCell(row.Option3 || row["Option3"])),
+            makeText(normalizeCell(row.Option4 || row["Option4"]))
+          ].filter(item => item.text !== "");
+
+          const finalOptions = options.length
+            ? options
+            : [makeText("Option A"), makeText("Option B"), makeText("Option C"), makeText("Option D")];
+
+          mcqItems.push({
+            question: makeText(question),
+            options: finalOptions,
+            correctOption: guessCorrectOption(answer, finalOptions),
+            answer: makeText(answer)
+          });
+          return;
+        }
+
+        if (type === "SHORT") {
+          shortItems.push({ question: makeText(question), answer: makeText(answer) });
+          return;
+        }
+
+        if (type === "BRIEF") {
+          briefItems.push({ question: makeText(question), answer: makeText(answer) });
+          return;
+        }
+
+        if (type === "DETAIL") {
+          detailItems.push({ question: makeText(question), answer: makeText(answer) });
+          return;
+        }
+
+        detailItems.push({ question: makeText(question), answer: makeText(answer) });
+      });
+
+      if (mcqItems.length) state.sections.mcq.items = mcqItems;
+      if (shortItems.length) state.sections.short.items = shortItems;
+      if (briefItems.length) state.sections.brief.items = briefItems;
+      if (detailItems.length) state.sections.detail.items = detailItems;
+
+      renderAll();
+    }
+
+    async function fetchQuestionBank() {
+      const qb = state.questionBank;
+
+      if (!qb.apiUrl.trim()) {
+        setBankStatus("Error: Please enter API URL.");
+        return;
+      }
+
+      if (!qb.sheetName.trim()) {
+        setBankStatus("Error: Please select Sheet Name.");
+        return;
+      }
+
+      try {
+        setBankStatus("Loading questions from bank...");
+
+        const url = new URL(qb.apiUrl.trim());
+        url.searchParams.set("sheet", qb.sheetName.trim());
+
+        if (qb.subject.trim()) url.searchParams.set("subject", qb.subject.trim());
+        if (qb.unit.trim()) url.searchParams.set("unit", qb.unit.trim());
+        if (qb.topic.trim()) url.searchParams.set("topic", qb.topic.trim());
+        if (qb.difficulty.trim()) url.searchParams.set("difficulty", qb.difficulty.trim());
+        if (qb.type.trim()) url.searchParams.set("type", qb.type.trim());
+        if (qb.limit) url.searchParams.set("limit", qb.limit);
+
+        const res = await fetch(url.toString(), { method: "GET", redirect: "follow" });
+        const rawText = await res.text();
+
+        let json;
+        try {
+          json = JSON.parse(rawText);
+        } catch {
+          console.error("Raw response:", rawText);
+          setBankStatus("Error: Server did not return JSON.");
+          return;
+        }
+
+        if (!json.success) {
+          setBankStatus(`Error: ${json.message || "Backend returned success=false."}`);
+          return;
+        }
+
+        if (!Array.isArray(json.data)) {
+          setBankStatus("Error: Response JSON does not contain valid data array.");
+          return;
+        }
+
+        if (!json.data.length) {
+          setBankStatus("Error: No questions found for selected filters.");
+          return;
+        }
+
+        fillQuestionsFromBank(json.data);
+        setBankStatus(`Success: Fetched ${json.data.length} questions from "${qb.sheetName}".`);
+      } catch (error) {
+        console.error(error);
+        setBankStatus(`Error: ${error.message || "Failed to fetch question bank."}`);
+      }
+    }
+
+    function renderTextEditor(item, onText, onBold, onSize, label = "Text") {
+      return `
+        <div class="compact-editor">
+          <div class="field">
+            <label>${label}</label>
+            <textarea oninput="${onText}">${escapeHtml(item.text || "")}</textarea>
+          </div>
+          <div class="compact-meta">
+            <div class="field">
+              <label>Font Size</label>
+              <input type="number" min="8" max="48" value="${item.size ?? ""}" oninput="${onSize}" placeholder="Default">
+            </div>
+            <label class="check">
+              <input type="checkbox" ${item.bold ? "checked" : ""} onchange="${onBold}">
+              Bold
+            </label>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSectionMeta(key, section) {
+      return `
+        <div class="grid-3">
+          <div class="field">
+            <label>Label</label>
+            <input value="${escapeHtml(section.label)}" oninput="setSectionMeta('${key}', 'label', this.value)">
+          </div>
+          <div class="field">
+            <label>Title</label>
+            <input value="${escapeHtml(section.title)}" oninput="setSectionMeta('${key}', 'title', this.value)">
+          </div>
+          <div class="field">
+            <label>Marks</label>
+            <input value="${escapeHtml(section.marks)}" oninput="setSectionMeta('${key}', 'marks', this.value)">
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSimpleEditor(sectionKey, items) {
+      return items.map((item, i) => `
+        <details class="group" ${i < 2 ? "open" : ""}>
+          <summary>
+            <span>${sectionKey.toUpperCase()} Question ${i + 1}</span>
+            <span class="summary-right">Edit</span>
+          </summary>
+          <div class="group-body">
+            <div class="item-head">
+              <strong>Manage</strong>
+              <div class="tiny-actions">
+                <button class="btn-secondary" onclick="moveSimpleQuestion('${sectionKey}', ${i}, -1)">Up</button>
+                <button class="btn-secondary" onclick="moveSimpleQuestion('${sectionKey}', ${i}, 1)">Down</button>
+                <button class="btn-danger" onclick="removeSimpleQuestion('${sectionKey}', ${i})">Remove</button>
+              </div>
+            </div>
+
+            ${renderTextEditor(
+              item.question,
+              `setSimpleQuestionField('${sectionKey}', ${i}, 'question', 'text', this.value)`,
+              `setSimpleQuestionField('${sectionKey}', ${i}, 'question', 'bold', this.checked)`,
+              `setSimpleQuestionField('${sectionKey}', ${i}, 'question', 'size', this.value)`,
+              "Question"
+            )}
+
+            ${renderTextEditor(
+              item.answer,
+              `setSimpleQuestionField('${sectionKey}', ${i}, 'answer', 'text', this.value)`,
+              `setSimpleQuestionField('${sectionKey}', ${i}, 'answer', 'bold', this.checked)`,
+              `setSimpleQuestionField('${sectionKey}', ${i}, 'answer', 'size', this.value)`,
+              "Answer"
+            )}
+          </div>
+        </details>
+      `).join("");
+    }
+
+    function renderAdminPanel() {
+      const p = state.paper;
+      const q = state.questionBank;
+
+      const admin = document.getElementById("adminPanel");
+      admin.innerHTML = `
+        <details class="group" open>
+          <summary>
+            <span>Question Bank</span>
+            <span class="summary-right">Google Sheet API</span>
+          </summary>
+          <div class="group-body">
+            <div class="field">
+              <label>Apps Script API URL</label>
+              <input value="${escapeHtml(q.apiUrl || "")}" oninput="setBank('apiUrl', this.value)" placeholder="Paste Apps Script Web App URL">
+            </div>
+
+            <div class="stack-actions">
+              <button class="btn-secondary" onclick="loadSheetNames()">Load Sheets</button>
+            </div>
+
+            <div class="field">
+              <label>Sheet Name</label>
+              <select onchange="setBank('sheetName', this.value)">
+                ${q.sheetOptions && q.sheetOptions.length
+                  ? q.sheetOptions.map(name => `
+                      <option value="${escapeHtml(name)}" ${q.sheetName === name ? "selected" : ""}>
+                        ${escapeHtml(name)}
+                      </option>
+                    `).join("")
+                  : `<option value="">No sheets loaded</option>`
+                }
+              </select>
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label>Subject</label>
+                <input value="${escapeHtml(q.subject || "")}" oninput="setBank('subject', this.value)" placeholder="Optional">
+              </div>
+              <div class="field">
+                <label>Unit</label>
+                <input value="${escapeHtml(q.unit || "")}" oninput="setBank('unit', this.value)" placeholder="Optional">
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label>Topic</label>
+                <input value="${escapeHtml(q.topic || "")}" oninput="setBank('topic', this.value)" placeholder="Optional">
+              </div>
+              <div class="field">
+                <label>Difficulty</label>
+                <select onchange="setBank('difficulty', this.value)">
+                  <option value="" ${q.difficulty === "" ? "selected" : ""}>All</option>
+                  <option value="easy" ${q.difficulty === "easy" ? "selected" : ""}>Easy</option>
+                  <option value="moderate" ${q.difficulty === "moderate" ? "selected" : ""}>Moderate</option>
+                  <option value="difficult" ${q.difficulty === "difficult" ? "selected" : ""}>Difficult</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label>Question Type</label>
+                <select onchange="setBank('type', this.value)">
+                  <option value="" ${q.type === "" ? "selected" : ""}>All Types</option>
+                  <option value="MCQ" ${q.type === "MCQ" ? "selected" : ""}>MCQ</option>
+                  <option value="SHORT" ${q.type === "SHORT" ? "selected" : ""}>SHORT</option>
+                  <option value="BRIEF" ${q.type === "BRIEF" ? "selected" : ""}>BRIEF</option>
+                  <option value="DETAIL" ${q.type === "DETAIL" ? "selected" : ""}>DETAIL</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Limit</label>
+                <input type="number" min="1" max="500" value="${q.limit || 20}" oninput="setBank('limit', this.value)">
+              </div>
+            </div>
+
+            <div class="stack-actions">
+              <button class="btn-primary" onclick="fetchQuestionBank()">Generate From Bank</button>
+              <button class="btn-danger" onclick="clearAllQuestions()">Clear Current Questions</button>
+            </div>
+
+            <div class="${getStatusClass(q.status)}">${escapeHtml(q.status || "Ready")}</div>
+          </div>
+        </details>
+
+        <details class="group">
+          <summary>
+            <span>Paper Details</span>
+            <span class="summary-right">${escapeHtml(p.courseCode)} • ${escapeHtml(p.totalMarks)} Marks</span>
+          </summary>
+          <div class="group-body">
+            <div class="field">
+              <label>University</label>
+              <input value="${escapeHtml(p.university)}" oninput="setPaper('university', this.value)">
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label>Exam Name</label>
+                <input value="${escapeHtml(p.examName)}" oninput="setPaper('examName', this.value)">
+              </div>
+              <div class="field">
+                <label>Semester</label>
+                <input value="${escapeHtml(p.semester)}" oninput="setPaper('semester', this.value)">
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Course Name</label>
+              <input value="${escapeHtml(p.courseName)}" oninput="setPaper('courseName', this.value)">
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label>Course Code</label>
+                <input value="${escapeHtml(p.courseCode)}" oninput="setPaper('courseCode', this.value)">
+              </div>
+              <div class="field">
+                <label>Total Marks</label>
+                <input value="${escapeHtml(p.totalMarks)}" oninput="setPaper('totalMarks', this.value)">
+              </div>
+            </div>
+
+            <div class="grid-3">
+              <div class="field">
+                <label>Date</label>
+                <input value="${escapeHtml(p.examDate)}" oninput="setPaper('examDate', this.value)">
+              </div>
+              <div class="field">
+                <label>Duration</label>
+                <input value="${escapeHtml(p.duration)}" oninput="setPaper('duration', this.value)">
+              </div>
+              <div class="field">
+                <label>Time</label>
+                <input value="${escapeHtml(p.examTime)}" oninput="setPaper('examTime', this.value)">
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Footer Stars</label>
+              <input value="${escapeHtml(p.footerStars)}" oninput="setPaper('footerStars', this.value)">
+            </div>
+          </div>
+        </details>
+
+        <details class="group">
+          <summary>
+            <span>Paper Style</span>
+            <span class="summary-right">${escapeHtml(p.fontFamily)} • Base ${p.baseSize}px</span>
+          </summary>
+          <div class="group-body">
+            <div class="grid-2">
+              <div class="field">
+                <label>Font Family</label>
+                <select onchange="setPaper('fontFamily', this.value)">
+                  <option value="century" ${p.fontFamily === "century" ? "selected" : ""}>Century</option>
+                  <option value="times" ${p.fontFamily === "times" ? "selected" : ""}>Times New Roman</option>
+                  <option value="georgia" ${p.fontFamily === "georgia" ? "selected" : ""}>Georgia</option>
+                  <option value="arial" ${p.fontFamily === "arial" ? "selected" : ""}>Arial</option>
+                  <option value="calibri" ${p.fontFamily === "calibri" ? "selected" : ""}>Calibri</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Base Size</label>
+                <input type="number" min="8" max="48" value="${p.baseSize}" oninput="setPaper('baseSize', this.value)">
+              </div>
+            </div>
+
+            <div class="grid-3">
+              <div class="field">
+                <label>Title Size</label>
+                <input type="number" min="8" max="48" value="${p.titleSize}" oninput="setPaper('titleSize', this.value)">
+              </div>
+              <div class="field">
+                <label>Meta Size</label>
+                <input type="number" min="8" max="48" value="${p.metaSize}" oninput="setPaper('metaSize', this.value)">
+              </div>
+              <div class="field">
+                <label>Footer Size</label>
+                <input type="number" min="8" max="48" value="${p.footerSize}" oninput="setPaper('footerSize', this.value)">
+              </div>
+            </div>
+
+            <div class="grid-3">
+              <div class="field">
+                <label>Instruction Title</label>
+                <input type="number" min="8" max="48" value="${p.instructionTitleSize}" oninput="setPaper('instructionTitleSize', this.value)">
+              </div>
+              <div class="field">
+                <label>Instruction</label>
+                <input type="number" min="8" max="48" value="${p.instructionSize}" oninput="setPaper('instructionSize', this.value)">
+              </div>
+              <div class="field">
+                <label>Section Title</label>
+                <input type="number" min="8" max="48" value="${p.sectionTitleSize}" oninput="setPaper('sectionTitleSize', this.value)">
+              </div>
+            </div>
+
+            <div class="grid-3">
+              <div class="field">
+                <label>Question Size</label>
+                <input type="number" min="8" max="48" value="${p.questionSize}" oninput="setPaper('questionSize', this.value)">
+              </div>
+              <div class="field">
+                <label>Option Size</label>
+                <input type="number" min="8" max="48" value="${p.optionSize}" oninput="setPaper('optionSize', this.value)">
+              </div>
+              <div class="field">
+                <label>Answer Size</label>
+                <input type="number" min="8" max="48" value="${p.answerSize}" oninput="setPaper('answerSize', this.value)">
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <label class="check">
+                <input type="checkbox" ${p.paperTextBold ? "checked" : ""} onchange="setPaperBool('paperTextBold', this.checked)">
+                Global Paper Bold
+              </label>
+              <label class="check">
+                <input type="checkbox" ${p.titleBold ? "checked" : ""} onchange="setPaperBool('titleBold', this.checked)">
+                Title Bold
+              </label>
+            </div>
+
+            <div class="grid-2">
+              <label class="check">
+                <input type="checkbox" ${p.metaBold ? "checked" : ""} onchange="setPaperBool('metaBold', this.checked)">
+                Meta Bold
+              </label>
+              <label class="check">
+                <input type="checkbox" ${p.instructionsBold ? "checked" : ""} onchange="setPaperBool('instructionsBold', this.checked)">
+                Instructions Bold
+              </label>
+            </div>
+
+            <label class="check">
+              <input type="checkbox" ${p.sectionTitleBold ? "checked" : ""} onchange="setPaperBool('sectionTitleBold', this.checked)">
+              Section Title Bold
+            </label>
+          </div>
+        </details>
+
+        <details class="group">
+          <summary>
+            <span>Instructions</span>
+            <span class="summary-right">${state.instructions.length} items</span>
+          </summary>
+          <div class="group-body">
+            ${state.instructions.map((item, i) => `
+              <div class="item">
+                <div class="item-head">
+                  <strong>Instruction ${i + 1}</strong>
+                  <div class="tiny-actions">
+                    <button class="btn-secondary" onclick="moveInstruction(${i}, -1)">Up</button>
+                    <button class="btn-secondary" onclick="moveInstruction(${i}, 1)">Down</button>
+                    <button class="btn-danger" onclick="removeInstruction(${i})">Remove</button>
+                  </div>
+                </div>
+
+                ${renderTextEditor(
+                  item,
+                  `setInstructionField(${i}, 'text', this.value)`,
+                  `setInstructionField(${i}, 'bold', this.checked)`,
+                  `setInstructionField(${i}, 'size', this.value)`,
+                  "Instruction"
+                )}
+              </div>
+            `).join("")}
+            <div class="stack-actions">
+              <button class="btn-primary" onclick="addInstruction()">+ Add Instruction</button>
+            </div>
+          </div>
+        </details>
+
+        <details class="group" open>
+          <summary>
+            <span>MCQ Section</span>
+            <span class="summary-right">${state.sections.mcq.items.length} questions</span>
+          </summary>
+          <div class="group-body">
+            ${renderSectionMeta("mcq", state.sections.mcq)}
+
+            ${state.sections.mcq.items.map((mcqItem, i) => `
+              <details class="group" ${i === 0 ? "open" : ""}>
+                <summary>
+                  <span>MCQ ${i + 1}</span>
+                  <span class="summary-right">${mcqItem.options.length} options</span>
+                </summary>
+                <div class="group-body">
+                  <div class="item-head">
+                    <strong>Manage MCQ</strong>
+                    <div class="tiny-actions">
+                      <button class="btn-secondary" onclick="moveMcq(${i}, -1)">Up</button>
+                      <button class="btn-secondary" onclick="moveMcq(${i}, 1)">Down</button>
+                      <button class="btn-danger" onclick="removeMcq(${i})">Remove</button>
+                    </div>
+                  </div>
+
+                  ${renderTextEditor(
+                    mcqItem.question,
+                    `setMcqQuestionField(${i}, 'text', this.value)`,
+                    `setMcqQuestionField(${i}, 'bold', this.checked)`,
+                    `setMcqQuestionField(${i}, 'size', this.value)`,
+                    "Question"
+                  )}
+
+                  <div class="field">
+                    <label>Correct Option</label>
+                    <select onchange="setMcqCorrectOption(${i}, this.value)">
+                      ${mcqItem.options.map((_, oi) => `
+                        <option value="${oi}" ${mcqItem.correctOption === oi ? "selected" : ""}>${String.fromCharCode(65 + oi)}</option>
+                      `).join("")}
+                    </select>
+                  </div>
+
+                  ${mcqItem.options.map((opt, oi) => `
+                    <div class="option">
+                      <div class="item-head">
+                        <strong>Option ${String.fromCharCode(65 + oi)} ${mcqItem.correctOption === oi ? "• Correct" : ""}</strong>
+                        <div class="tiny-actions">
+                          <button class="btn-secondary" onclick="moveMcqOption(${i}, ${oi}, -1)">Up</button>
+                          <button class="btn-secondary" onclick="moveMcqOption(${i}, ${oi}, 1)">Down</button>
+                          <button class="btn-danger" onclick="removeMcqOption(${i}, ${oi})">Remove</button>
+                        </div>
+                      </div>
+
+                      ${renderTextEditor(
+                        opt,
+                        `setMcqOptionField(${i}, ${oi}, 'text', this.value)`,
+                        `setMcqOptionField(${i}, ${oi}, 'bold', this.checked)`,
+                        `setMcqOptionField(${i}, ${oi}, 'size', this.value)`,
+                        "Option Text"
+                      )}
+                    </div>
+                  `).join("")}
+
+                  <div class="stack-actions">
+                    <button class="btn-warning" onclick="addMcqOption(${i})">+ Add Option</button>
+                  </div>
+
+                  ${renderTextEditor(
+                    mcqItem.answer,
+                    `setMcqAnswerField(${i}, 'text', this.value)`,
+                    `setMcqAnswerField(${i}, 'bold', this.checked)`,
+                    `setMcqAnswerField(${i}, 'size', this.value)`,
+                    "Answer / Explanation"
+                  )}
+                </div>
+              </details>
+            `).join("")}
+
+            <div class="stack-actions">
+              <button class="btn-primary" onclick="addMcq()">+ Add MCQ</button>
+            </div>
+          </div>
+        </details>
+
+        <details class="group">
+          <summary>
+            <span>Short Answer Section</span>
+            <span class="summary-right">${state.sections.short.items.length} questions</span>
+          </summary>
+          <div class="group-body">
+            ${renderSectionMeta("short", state.sections.short)}
+            ${renderSimpleEditor("short", state.sections.short.items)}
+            <div class="stack-actions">
+              <button class="btn-primary" onclick="addSimpleQuestion('short')">+ Add Short Question</button>
+            </div>
+          </div>
+        </details>
+
+        <details class="group">
+          <summary>
+            <span>Brief Answer Section</span>
+            <span class="summary-right">${state.sections.brief.items.length} questions</span>
+          </summary>
+          <div class="group-body">
+            ${renderSectionMeta("brief", state.sections.brief)}
+            ${renderSimpleEditor("brief", state.sections.brief.items)}
+            <div class="stack-actions">
+              <button class="btn-primary" onclick="addSimpleQuestion('brief')">+ Add Brief Question</button>
+            </div>
+          </div>
+        </details>
+
+        <details class="group">
+          <summary>
+            <span>Detail Answer Section</span>
+            <span class="summary-right">${state.sections.detail.items.length} questions</span>
+          </summary>
+          <div class="group-body">
+            ${renderSectionMeta("detail", state.sections.detail)}
+            ${renderSimpleEditor("detail", state.sections.detail.items)}
+            <div class="stack-actions">
+              <button class="btn-primary" onclick="addSimpleQuestion('detail')">+ Add Detail Question</button>
+            </div>
+          </div>
+        </details>
+      `;
+    }
+
+    function setPreviewMode(mode) {
+      ui.previewMode = mode === "answer" ? "answer" : "question";
+      saveUI();
+      renderPreview();
+      updateModeChip();
+    }
+
+    function updateModeChip() {
+      const chip = document.getElementById("modeChip");
+      chip.className = ui.previewMode === "answer" ? "chip answer" : "chip";
+      chip.textContent = ui.previewMode === "answer" ? "Answer Preview" : "Question Preview";
+    }
+
+    function printPreview(mode) {
+      setPreviewMode(mode);
+      setTimeout(() => window.print(), 80);
+    }
+
+    function toggleSidebar() {
+      ui.sidebarVisible = !ui.sidebarVisible;
+      applyUILayout();
+      saveUI();
+    }
+
+    function applyUILayout() {
+      const app = document.getElementById("app");
+      const btn = document.getElementById("sidebarToggleBtn");
+
+      app.style.setProperty("--sidebar-width", `${ui.sidebarWidth}px`);
+
+      if (ui.sidebarVisible) {
+        app.classList.remove("sidebar-hidden");
+        btn.textContent = "Hide Admin";
+      } else {
+        app.classList.add("sidebar-hidden");
+        btn.textContent = "Show Admin";
+      }
+    }
+
+    function initResizer() {
+      const resizer = document.getElementById("resizer");
+      const app = document.getElementById("app");
+      let isDragging = false;
+
+      function startDrag(e) {
+        if (window.innerWidth <= 1250 || !ui.sidebarVisible) return;
+        isDragging = true;
+        resizer.classList.add("active");
+        document.body.style.cursor = "col-resize";
+        document.body.style.userSelect = "none";
+        e.preventDefault();
+      }
+
+      function onMove(e) {
+        if (!isDragging) return;
+        const appRect = app.getBoundingClientRect();
+        const next = e.clientX - appRect.left - 10;
+        ui.sidebarWidth = Math.max(300, Math.min(600, next));
+        applyUILayout();
+      }
+
+      function stopDrag() {
+        if (!isDragging) return;
+        isDragging = false;
+        resizer.classList.remove("active");
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
+        saveUI();
+      }
+
+      resizer.addEventListener("mousedown", startDrag);
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mouseup", stopDrag);
+    }
+
+    function renderPreview() {
+      const p = state.paper;
+      const family = fontMap[p.fontFamily] || fontMap.century;
+      const defaultWeight = p.paperTextBold ? 700 : 400;
+      const isAnswerMode = ui.previewMode === "answer";
+
+      function previewText(item, fallbackSize, boldFallback) {
+        const size = item && item.size ? item.size : fallbackSize;
+        const weight = item && typeof item.bold === "boolean"
+          ? (item.bold ? 700 : 400)
+          : (boldFallback ? 700 : defaultWeight);
+
+        return `<span style="font-size:${size}px;font-weight:${weight};">${nl2br(item?.text || "")}</span>`;
+      }
+
+      function simpleRows(items) {
+        return items.map((item, i) => `
+          <tr>
+            <td class="blank"></td>
+            <td class="q-num">${i + 1}</td>
+            <td colspan="2">${previewText(item.question, p.questionSize, false)}</td>
+            <td class="blank"></td>
+          </tr>
+          ${isAnswerMode && (item.answer?.text || "").trim() ? `
+            <tr>
+              <td class="blank"></td>
+              <td class="blank"></td>
+              <td colspan="2" class="answer-fill">${previewText(item.answer, p.answerSize, false)}</td>
+              <td class="blank"></td>
+            </tr>
+          ` : ""}
+        `).join("");
+      }
+
+      function mcqRows(items) {
+        return items.map((item, i) => `
+          <tr>
+            <td class="blank"></td>
+            <td class="q-num">${i + 1}</td>
+            <td colspan="2">${previewText(item.question, p.questionSize, false)}</td>
+            <td class="blank"></td>
+          </tr>
+
+          ${item.options.map((opt, oi) => {
+            const highlight = isAnswerMode && oi === item.correctOption;
+            return `
+              <tr>
+                <td class="blank"></td>
+                <td class="blank"></td>
+                <td class="q-opt ${highlight ? "answer-highlight" : ""}">${String.fromCharCode(97 + oi)}</td>
+                <td class="${highlight ? "answer-highlight" : ""}">${previewText(opt, p.optionSize, false)}</td>
+                <td class="blank"></td>
+              </tr>
+            `;
+          }).join("")}
+
+          ${isAnswerMode ? `
+            <tr>
+              <td class="blank"></td>
+              <td class="blank"></td>
+              <td colspan="2" class="answer-fill">
+                <span style="font-size:${p.answerSize}px;font-weight:${defaultWeight};">
+                  Correct Answer: ${String.fromCharCode(65 + item.correctOption)}
+                </span>
+                ${(item.answer?.text || "").trim() ? `<br>${previewText(item.answer, p.answerSize, false)}` : ""}
+              </td>
+              <td class="blank"></td>
+            </tr>
+          ` : ""}
+        `).join("");
+      }
+
+      function sectionBlock(section, rows) {
+        return `
+          <tr>
+            <td class="q-label">${escapeHtml(section.label)}</td>
+            <td colspan="3" style="font-size:${p.sectionTitleSize}px;font-weight:${p.sectionTitleBold ? 700 : defaultWeight};">
+              ${escapeHtml(section.title)}
+            </td>
+            <td class="q-marks">${escapeHtml(section.marks)}</td>
+          </tr>
+          ${rows}
+        `;
+      }
+
+      document.getElementById("preview").innerHTML = `
+        <div class="paper" style="font-family:${family};font-size:${p.baseSize}px;font-weight:${defaultWeight};">
+          <div class="paper-title">
+            <div style="font-size:${p.titleSize}px;font-weight:${p.titleBold ? 700 : defaultWeight};">${escapeHtml(p.university)}</div>
+            <div style="font-size:${p.titleSize}px;font-weight:${p.titleBold ? 700 : defaultWeight};">${escapeHtml(p.examName)}</div>
+            <div style="font-size:${p.titleSize}px;font-weight:${p.titleBold ? 700 : defaultWeight};">${escapeHtml(p.semester)}</div>
+          </div>
+
+          <div class="meta-grid" style="font-size:${p.metaSize}px;font-weight:${p.metaBold ? 700 : defaultWeight};">
+            <div>
+              <div>Course Name: ${escapeHtml(p.courseName)}</div>
+              <div>Course Code: ${escapeHtml(p.courseCode)}</div>
+              <div>Total Marks: ${escapeHtml(p.totalMarks)}</div>
+              <div>Date: ${escapeHtml(p.examDate)}</div>
+            </div>
+            <div class="meta-right">
+              <div>Duration: ${escapeHtml(p.duration)}</div>
+              <div>Time: ${escapeHtml(p.examTime)}</div>
+            </div>
+          </div>
+
+          <div class="instructions-title" style="font-size:${p.instructionTitleSize}px;font-weight:${p.instructionsBold ? 700 : defaultWeight};">
+            Instructions for students:
+          </div>
+
+          <ol class="instructions-list" style="font-size:${p.instructionSize}px;font-weight:${p.instructionsBold ? 700 : defaultWeight};">
+            ${state.instructions.map(item => `<li>${previewText(item, p.instructionSize, p.instructionsBold)}</li>`).join("")}
+          </ol>
+
+          <table class="paper-table">
+            <colgroup>
+              <col style="width:48px">
+              <col style="width:34px">
+              <col style="width:32px">
+              <col>
+              <col style="width:52px">
+            </colgroup>
+
+            ${sectionBlock(state.sections.mcq, mcqRows(state.sections.mcq.items))}
+            ${sectionBlock(state.sections.short, simpleRows(state.sections.short.items))}
+            ${sectionBlock(state.sections.brief, simpleRows(state.sections.brief.items))}
+            ${sectionBlock(state.sections.detail, simpleRows(state.sections.detail.items))}
+          </table>
+
+          <div class="footer-stars" style="font-size:${p.footerSize}px;font-weight:${defaultWeight};">
+            ${escapeHtml(p.footerStars)}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAll() {
+      renderAdminPanel();
+      renderPreview();
+      updateModeChip();
+      applyUILayout();
+      autoSave();
+    }
+
+    (function init() {
+      loadUI();
+
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        try {
+          state = normalizeState(JSON.parse(raw));
+        } catch {
+          state = defaultState();
+        }
+      } else {
+        state = defaultState();
+      }
+
+      initResizer();
+      renderAll();
+
+      if (state.questionBank.apiUrl && state.questionBank.apiUrl.trim()) {
+        loadSheetNames();
+      }
+    })();
+  </script>
+</body>
+</html>

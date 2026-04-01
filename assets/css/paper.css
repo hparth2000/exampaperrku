@@ -1,0 +1,124 @@
+.paper-preview-wrap {
+  min-height: 400px;
+}
+
+.paper-page {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+  padding: 14mm 12mm;
+}
+
+.paper-page * {
+  word-wrap: break-word;
+}
+
+.paper-title {
+  text-align: center;
+  line-height: 1.2;
+  margin-bottom: 18px;
+}
+
+.paper-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+
+.paper-meta-right {
+  padding-top: 38px;
+}
+
+.paper-instructions-title {
+  margin-bottom: 4px;
+}
+
+.paper-instructions-list {
+  margin: 0 0 14px 22px;
+  padding-left: 20px;
+  line-height: 1.4;
+}
+
+.paper-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.paper-table td {
+  border: 1px solid #555;
+  padding: 6px 8px;
+  vertical-align: top;
+}
+
+.paper-q-label {
+  width: 54px;
+  text-align: center;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.paper-q-num {
+  width: 56px;
+  text-align: right;
+  font-weight: 700;
+}
+
+.paper-q-opt {
+  width: 40px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.paper-q-marks {
+  width: 58px;
+  text-align: center;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.paper-blank {
+  background: #fff;
+}
+
+.paper-footer-stars {
+  text-align: center;
+  margin-top: 14px;
+  letter-spacing: 1px;
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .sidebar,
+  .preview-toolbar {
+    display: none !important;
+  }
+
+  .app-shell {
+    display: block;
+    padding: 0;
+  }
+
+  .main-preview {
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .paper-page {
+    width: 100%;
+    min-height: auto;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+}
